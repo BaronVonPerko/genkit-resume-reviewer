@@ -6,7 +6,8 @@
     "types": []
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "shared/sample-resume.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts"

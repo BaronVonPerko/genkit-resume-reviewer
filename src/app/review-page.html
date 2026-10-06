@@ -1,0 +1,112 @@
+<main class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
+  <header class="flex flex-col gap-3">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">AI Resume Reviewer</h1>
+    <p class="text-xl leading-relaxed text-slate-700 sm:text-2xl">
+      Paste a resume to get an ATS score, a formatting review, an impact review, and a short list of tips.
+    </p>
+  </header>
+
+  @if (authError(); as message) {
+    <p role="alert" class="rounded-md border-2 border-red-800 bg-red-50 px-4 py-3 text-xl leading-relaxed text-red-900">
+      {{ message }}
+    </p>
+  } @else if (!authReady()) {
+    <p class="text-xl leading-relaxed text-slate-700">Signing in to the demo account.</p>
+  }
+
+  <form class="flex flex-col gap-4" (submit)="onSubmit($event)">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+      <label for="resume-text" class="text-2xl font-semibold">Resume text</label>
+      <p id="resume-count" class="text-xl text-slate-700 tabular-nums">
+        {{ formattedCount() }} / {{ formattedMaximum }} characters
+      </p>
+    </div>
+    <p id="resume-hint" class="text-xl leading-relaxed text-slate-700">
+      Paste plain text or Markdown. Reviews need between {{ minimumCharacters }} and {{ formattedMaximum }} characters.
+    </p>
+    <textarea
+      id="resume-text"
+      name="resumeText"
+      class="min-h-72 w-full resize-y rounded-lg border-2 border-slate-700 bg-white px-4 py-3 text-xl leading-relaxed text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-blue-800"
+      rows="12"
+      [value]="resumeText()"
+      [attr.aria-invalid]="lengthIssue() ? 'true' : 'false'"
+      aria-describedby="resume-hint resume-count resume-length-message"
+      (input)="onResumeInput($event)"
+    ></textarea>
+    <p id="resume-length-message" aria-live="polite" aria-atomic="true" [class]="lengthMessageClass()">
+      {{ lengthMessage() }}
+    </p>
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button
+        type="button"
+        class="min-h-12 w-full rounded-lg border-2 border-blue-800 bg-white px-5 py-3 text-xl font-semibold text-blue-800 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-blue-800 sm:w-auto"
+        (click)="loadSample()"
+      >
+        Load sample resume
+      </button>
+      <button
+        type="submit"
+        class="min-h-12 w-full rounded-lg bg-blue-800 px-5 py-3 text-xl font-semibold text-white focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-blue-800 disabled:bg-slate-200 disabled:text-slate-700 sm:w-auto"
+        [disabled]="!canReview()"
+        [attr.aria-describedby]="lengthMessage() ? 'resume-length-message' : null"
+      >
+        Review resume
+      </button>
+    </div>
+  </form>
+
+  <section class="flex flex-col gap-4" aria-labelledby="pipeline-heading">
+    <h2 id="pipeline-heading" class="text-3xl font-bold">Review steps</h2>
+    <p aria-live="polite" aria-atomic="true" [class]="announcementClass()">{{ announcement() }}</p>
+    @if (status() === 'error') {
+      <button
+        type="button"
+        class="min-h-12 w-full rounded-lg bg-blue-800 px-5 py-3 text-xl font-semibold text-white focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-solid focus-visible:outline-blue-800 disabled:bg-slate-200 disabled:text-slate-700 sm:w-auto"
+        [disabled]="!canReview()"
+        (click)="review()"
+      >
+        Try again
+      </button>
+    }
+    <ol role="list" class="flex list-none flex-col gap-3">
+      @for (step of steps(); track step.id) {
+        <li role="listitem" [class]="step.rowClass" [attr.data-step]="step.id" [attr.aria-current]="step.current ? 'step' : null">
+          <span>Step {{ $index + 1 }}. {{ step.title }}</span>
+          <span [attr.data-state]="step.stateLabel">{{ step.stateLabel }}</span>
+        </li>
+      }
+    </ol>
+  </section>
+
+  @if (status() === 'complete') {
+    @if (result(); as review) {
+      <section class="flex flex-col gap-5" aria-labelledby="result-heading" data-region="result">
+        <h2 id="result-heading" class="text-3xl font-bold">Review result</h2>
+        <div class="flex flex-col gap-2">
+          <h3 class="text-2xl font-semibold">ATS score</h3>
+          <p class="text-5xl font-bold sm:text-7xl">
+            {{ review.atsScore }}
+            <span class="text-2xl font-semibold text-slate-700 sm:text-4xl">out of 100</span>
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <h3 class="text-2xl font-semibold">Formatting review</h3>
+          <p class="text-xl leading-relaxed sm:text-2xl">{{ review.formattingReview }}</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <h3 class="text-2xl font-semibold">Impact review</h3>
+          <p class="text-xl leading-relaxed sm:text-2xl">{{ review.impactReview }}</p>
+        </div>
+        <div class="flex flex-col gap-3">
+          <h3 class="text-2xl font-semibold">Tips</h3>
+          <ul class="list-disc space-y-3 ps-8 text-xl leading-relaxed sm:text-2xl">
+            @for (tip of review.actionableTips; track $index) {
+              <li>{{ tip }}</li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
+  }
+</main>
