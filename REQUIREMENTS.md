@@ -2,7 +2,7 @@
 
 Requirements for the live demo in **From Zero to AI-Powered: Building Modern Web Apps with Firebase Genkit**.
 
-The demo is a small app that reads pasted resume text and returns a structured review. The backend is a Firebase Genkit flow. The primary UI is this Angular app. A thin React example calls the same flow, so the talk can show that the AI logic is not tied to one frontend.
+The demo is a small app that reads pasted resume text and returns a structured review. The backend is a Firebase Genkit flow. The UI is this Angular app.
 
 The interaction model follows [Streaming real-time AI telemetry with Firebase Genkit and Angular Signals](https://perko.dev/blog/post/2026-07-07-streaming-real-time-ai-telemetry-with-firebase-genkit-and-angular-signals): a multi-step model pipeline streams status milestones to the client, then returns one structured result. Progress is not written to a database.
 
@@ -49,7 +49,7 @@ The final object is:
 | `impactReview` | string | A short paragraph from the impact pass. |
 | `actionableTips` | 3 to 5 strings | Concrete edits the candidate could make. |
 
-Zod on the server is the contract. The Angular client and the React example each declare a matching TypeScript type. They do not re-validate with a second schema.
+Zod on the server is the contract. The Angular client declares a matching TypeScript type. It does not re-validate with a second schema.
 
 ### Client states
 
@@ -97,7 +97,7 @@ These are part of the demo, not follow-up work. The talk calls them out.
 
 ### What the client calls
 
-The Angular service and the React hook call the deployed (or emulated) callable and read its stream. They do not import Genkit. Firebase Auth attaches the user token. App Check attaches its token through the Firebase SDK setup.
+The Angular service calls the deployed (or emulated) callable and reads its stream. It does not import Genkit. Firebase Auth attaches the user token. App Check attaches its token through the Firebase SDK setup.
 
 ## Angular app
 
@@ -125,14 +125,6 @@ The page is meant to be readable from the back of a room.
 
 Empty, in-progress, complete, error, and over-limit input are all visible states. Over-limit input is explained next to the field (character count and the 12,000 cap) before the user submits.
 
-## React example
-
-Add a minimal React example under `examples/react/` so the talk can show a second client against the same flow. It is not a second product.
-
-- One custom hook, `useResumeReview`, that calls the same callable, exposes the current step, the result, an error, and a `runAnalysis` function.
-- One small page that wires the hook to a textarea and a button and prints the step plus the final score and tips.
-- No shared UI kit with the Angular app. The point is the consumption pattern, not visual parity.
-
 ## Local testing
 
 Two loops, both required for the talk:
@@ -144,6 +136,7 @@ A checked-in sample input (the same fictional resume) is the default payload in 
 
 ## Out of scope
 
+- A React (or other second) client. This demo is Angular only.
 - PDF or DOCX upload, and any file parsing.
 - Accounts UI beyond what the emulator needs for a verified demo user.
 - Saving reviews, history, or sharing a result.
@@ -162,6 +155,5 @@ A checked-in sample input (the same fictional resume) is the default payload in 
 - The API key is only referenced as a Functions secret.
 - The Angular page can load the sample resume, show each step as it arrives, and render the final result without a reload.
 - A failed call shows the error state and can be retried.
-- The React hook drives the same statuses and result from the same callable.
 - The flow runs from the Genkit Developer UI with the sample resume, and the trace contains three generation steps.
 - The page meets WCAG AA for the controls and status text described above: names, focus, contrast, and a live region.
