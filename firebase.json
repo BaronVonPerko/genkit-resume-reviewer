@@ -2,7 +2,9 @@
   "functions": {
     "source": "functions",
     "ignore": ["node_modules", ".secret.local"],
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    "predeploy": [
+      "node \"$RESOURCE_DIR/node_modules/typescript/lib/tsc.js\" -p \"$RESOURCE_DIR\""
+    ]
   },
   "emulators": {
     "auth": {
