@@ -1,10 +1,6 @@
 import { computed, Service, signal } from '@angular/core';
 import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
-import {
-  CustomProvider,
-  initializeAppCheck,
-  ReCaptchaEnterpriseProvider,
-} from 'firebase/app-check';
+import { CustomProvider, initializeAppCheck } from 'firebase/app-check';
 import {
   connectAuthEmulator,
   createUserWithEmailAndPassword,
@@ -22,6 +18,7 @@ import {
   type Functions,
 } from 'firebase/functions';
 import { environment } from '../environments/environment';
+import { createRecaptchaEnterpriseAppCheckProvider } from './recaptcha-enterprise-app-check';
 import {
   type AnalyzeResumeChunk,
   type AnalyzeResumeInput,
@@ -204,7 +201,7 @@ export class ResumeReviewService {
     }
     if (environment.appCheckSiteKey) {
       initializeAppCheck(app, {
-        provider: new ReCaptchaEnterpriseProvider(environment.appCheckSiteKey),
+        provider: createRecaptchaEnterpriseAppCheckProvider(app, environment.appCheckSiteKey),
         isTokenAutoRefreshEnabled: true,
       });
       return;
@@ -271,6 +268,9 @@ function authErrorMessage(error: unknown): string {
   }
   if (code.includes('too-many-requests')) {
     return 'Too many attempts. Wait a moment and try again.';
+  }
+  if (code.includes('firebase-app-check-token')) {
+    return 'App Check rejected this browser. Reload the page and try again.';
   }
   return 'Sign-in failed. Try again.';
 }
