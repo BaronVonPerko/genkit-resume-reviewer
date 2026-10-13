@@ -8,5 +8,5 @@ export const environment = {
     storageBucket: 'genkit-resume-reviewer.firebasestorage.app',
   },
   // The reCAPTCHA Enterprise site key is required at deploy time.
-  appCheckSiteKey: '',
+  appCheckSiteKey: '6LeqTe0tAAAAADr_mpVibVa2MJgV7z74wcRr1ENY',
 };
