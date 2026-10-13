@@ -30,6 +30,11 @@ export class ReviewPage {
   protected readonly errorMessage = this.reviews.errorMessage;
   protected readonly authReady = this.reviews.authReady;
   protected readonly authError = this.reviews.authError;
+  protected readonly signInRequired = this.reviews.signInRequired;
+  protected readonly signedInEmail = this.reviews.signedInEmail;
+  protected readonly email = signal('');
+  protected readonly password = signal('');
+  protected readonly passwordVisible = signal(false);
 
   protected readonly trimmedLength = computed(() => this.resumeText().trim().length);
   protected readonly formattedCount = computed(() => formatCharacterCount(this.trimmedLength()));
@@ -105,6 +110,33 @@ export class ReviewPage {
       : 'text-xl leading-relaxed text-slate-700',
   );
 
+  protected onEmailInput(event: Event): void {
+    const value = inputValue(event);
+    if (value !== null) {
+      this.email.set(value);
+    }
+  }
+
+  protected onPasswordInput(event: Event): void {
+    const value = inputValue(event);
+    if (value !== null) {
+      this.password.set(value);
+    }
+  }
+
+  protected togglePasswordVisible(): void {
+    this.passwordVisible.update((visible) => !visible);
+  }
+
+  protected onSignIn(event: Event): void {
+    event.preventDefault();
+    void this.reviews.signIn(this.email(), this.password());
+  }
+
+  protected onCreateAccount(): void {
+    void this.reviews.createAccount(this.email(), this.password());
+  }
+
   protected onResumeInput(event: Event): void {
     const target = event.target;
     if (!(target instanceof HTMLTextAreaElement)) {
@@ -135,11 +167,17 @@ export class ReviewPage {
   }
 }
 
+function inputValue(event: Event): string | null {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return null;
+  }
+  return target.value;
+}
+
 function isRunning(status: ReviewStatus): boolean {
   return (
-    status === 'parsing_structure' ||
-    status === 'analyzing_impact' ||
-    status === 'generating_tips'
+    status === 'parsing_structure' || status === 'analyzing_impact' || status === 'generating_tips'
   );
 }
 

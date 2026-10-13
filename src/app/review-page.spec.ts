@@ -11,6 +11,10 @@ class StubResumeReviewService {
   readonly errorMessage = signal<string | null>(null);
   readonly authReady = signal(true);
   readonly authError = signal<string | null>(null);
+  readonly signInRequired = signal(false);
+  readonly signedInEmail = signal<string | null>(null);
+  readonly signIn = vi.fn(async (_email: string, _password: string) => {});
+  readonly createAccount = vi.fn(async (_email: string, _password: string) => {});
   readonly review = vi.fn(async (_resumeText: string) => {});
 }
 
@@ -23,6 +27,17 @@ describe('ReviewPage', () => {
       imports: [ReviewPage],
       providers: [{ provide: ResumeReviewService, useValue: stub }],
     }).compileComponents();
+  });
+
+  it('asks for a verified email before a hosted review', () => {
+    stub.authReady.set(false);
+    stub.signInRequired.set(true);
+    const fixture = createPage();
+
+    expect(button(fixture, 'Sign in')).toBeTruthy();
+    expect(button(fixture, 'Review resume').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#sign-in-email')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#current-password')).toBeTruthy();
   });
 
   it('loads the sample resume into the textarea', () => {
@@ -109,7 +124,9 @@ describe('ReviewPage', () => {
     const tips = [...result.querySelectorAll('li')].map((item) => item.textContent?.trim());
     expect(tips).toEqual(review.actionableTips);
     expect(resumeField(fixture).value).toBe(SAMPLE_RESUME);
-    expect(fixture.nativeElement.querySelector('button')?.textContent).toContain('Load sample resume');
+    expect(fixture.nativeElement.querySelector('button')?.textContent).toContain(
+      'Load sample resume',
+    );
     expect(buttonExists(fixture, 'Try again')).toBe(false);
   });
 
@@ -160,8 +177,8 @@ function setResume(fixture: ComponentFixture<ReviewPage>, value: string): void {
 }
 
 function button(fixture: ComponentFixture<ReviewPage>, name: string): HTMLButtonElement {
-  const match = [...fixture.nativeElement.querySelectorAll('button')].find(
-    (element) => element.textContent?.includes(name),
+  const match = [...fixture.nativeElement.querySelectorAll('button')].find((element) =>
+    element.textContent?.includes(name),
   );
   if (!(match instanceof HTMLButtonElement)) {
     throw new Error(`Missing button ${name}.`);
