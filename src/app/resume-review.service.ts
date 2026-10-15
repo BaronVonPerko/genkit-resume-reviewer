@@ -83,9 +83,8 @@ export class ResumeReviewService {
         resumeText: resumeText.trim(),
       });
       for await (const chunk of stream) {
-        const status = readChunkStatus(chunk);
-        if (status) {
-          this.statusState.set(status);
+        if (chunk.status) {
+          this.statusState.set(chunk.status);
         }
       }
       this.resultState.set(await data);
@@ -208,23 +207,6 @@ export class ResumeReviewService {
     }
     // The reCAPTCHA Enterprise site key is required at deploy time.
   }
-}
-
-function readChunkStatus(chunk: unknown): ReviewStep | null {
-  const value =
-    typeof chunk === 'string'
-      ? chunk
-      : chunk && typeof chunk === 'object' && 'status' in chunk
-        ? chunk.status
-        : null;
-  if (
-    value === 'parsing_structure' ||
-    value === 'analyzing_impact' ||
-    value === 'generating_tips'
-  ) {
-    return value;
-  }
-  return null;
 }
 
 function reviewErrorMessage(error: unknown): string {
